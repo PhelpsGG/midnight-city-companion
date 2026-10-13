@@ -36,7 +36,7 @@ export class LiveTransport {
     return {agent:{...context.agent,skills:progression.skills,inventory:inventory.inventory,equipment:progression.equipment,
       completedContractIds:progression.completedContractIds,activeWork:progression.activeWork,vitals:progression.vitals,hunger:needs.hunger},
       capabilities:progression.capabilities,resources:resources.resources??[],control,load:inventory.load,
-      events:events.recentEvents,tick:Math.max(context.tick,progression.tick,inventory.tick),receivedAt:Date.now()};
+      context,events:events.recentEvents,tick:Math.max(context.tick,progression.tick,inventory.tick),receivedAt:Date.now()};
   }
   async claim(agentId){
     if(!this.token)fail('AUTH_REQUIRED','Connect an authorized character first.',401);
@@ -47,5 +47,6 @@ export class LiveTransport {
     return this.request('/api/local-control/session',{token:this.token,body:{agentId,clientInstanceId:'midnight-companion-'+randomUUID(),modelId:'companion-manual'},mutation:true});
   }
   async heartbeat(lease){return this.request('/api/local-control/session/heartbeat',{token:lease.token,body:{sessionId:lease.sessionId},mutation:true});}
+  async submit(lease,action){return this.request('/api/actions',{token:lease.token,body:{...action,agentId:lease.agentId},mutation:true});}
   async release(lease){return this.request('/api/local-control/session/release',{token:lease.token,body:{sessionId:lease.sessionId},mutation:true});}
 }

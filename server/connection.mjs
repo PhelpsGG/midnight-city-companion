@@ -7,11 +7,11 @@ const validId=id=>typeof id==='string'&&/^[A-Za-z0-9_-]{1,160}$/.test(id);
 // One owner credential and one selected agent per local browser session.
 // Neither credentials nor leases are projected into browser state or persisted.
 export class Connection {
- #transport;#now;#claims;#key='';#ids=[];#id=null;#state=null;#lease=null;#busy=false;#stale=false;#message='';
+ #transport;#now;#claims;#key='';#ids=[];#id=null;#state=null;#lease=null;#busy=false;#stale=false;#message='';#disconnecting=false;#waiters=[];
  constructor(transport,{now=Date.now,claims=new Map()}={}){this.#transport=transport;this.#now=now;this.#claims=claims;}
  #validLease(lease){return lease?.agentId===this.#id&&typeof lease.token==='string'&&Boolean(lease.token)&&typeof lease.sessionId==='string'&&Boolean(lease.sessionId)&&Number.isFinite(lease.expiresAt)&&lease.expiresAt>this.#now();}
  async #dropLease(){const lease=this.#lease;this.#lease=null;if(lease)try{await this.#transport.release(lease);}catch{/* The upstream lease expires independently. */}}
- async #exclusive(fn){if(this.#busy)reject('Wait for the current request to finish.');this.#busy=true;try{await fn();return this.view();}finally{this.#busy=false;}}
+ async #exclusive(fn,disconnecting=false){if(this.#busy||(this.#disconnecting&&!disconnecting))throw Object.assign(new ConnectionError('Wait for the current request to finish.'),{code:'CONNECTION_BUSY'});this.#busy=true;try{await fn();return this.view();}finally{this.#busy=false;for(const resolve of this.#waiters.splice(0))resolve();}}
  async authorize(key){return this.#exclusive(async()=>{
   if(this.#id||this.#key)reject('Disconnect before changing the account.');
   if(typeof key!=='string'||!key.trim()||key.length>4096||/[\r\n]/.test(key))reject('Enter an existing agent API key.',400);
@@ -44,7 +44,7 @@ export class Connection {
   if(state.agent.activeAction||state.agent.activeWork||state.agent.isPerformingJob||state.agent.activeModule?.locksCommonActions)reject('The character is busy. Wait for its current activity to finish.');
   let lease;try{lease=await this.#transport.claim(this.#id);}catch{reject('Control could not be connected. Refresh before trying again.',502);}
   if(!this.#validLease(lease))reject('The control response could not be verified. No actions are enabled.',502);
-  this.#lease=lease;this.#message='Control connected. Gameplay actions are not enabled in this milestone.';
+  this.#lease=lease;this.#message='Control connected. Choose actions in Goals or pair your AI.';
   }finally{reservation.pending=false;if(!this.#lease&&this.#claims.get(this.#id)===reservation)this.#claims.delete(this.#id);}
  });}
  async refresh(){return this.#exclusive(async()=>{
@@ -52,11 +52,13 @@ export class Connection {
   if(this.#lease){try{if(!this.#validLease(this.#lease))throw Error();const next=await this.#transport.heartbeat(this.#lease);if(!this.#validLease(next)||next.sessionId!==this.#lease.sessionId)throw Error();this.#lease=next;}catch{await this.#dropLease();this.#message='Control was lost or expired. Reconnect explicitly after checking the current controller.';}}
   try{await this.#read();}catch{this.#message='Character refresh failed. The last observation is shown.';}
  });}
- async disconnect(){return this.#exclusive(async()=>{
+ async disconnect(){this.#disconnecting=true;try{while(this.#busy)await new Promise(resolve=>this.#waiters.push(resolve));return await this.#exclusive(async()=>{
   const lease=this.#lease;if(this.#claims.get(this.#id)?.connection===this)this.#claims.delete(this.#id);this.#lease=null;this.#key='';this.#ids=[];this.#id=null;this.#state=null;this.#stale=false;this.#message='Disconnected. Local credentials cleared.';
   // LiveTransport keeps the verified key for claim; clear it as well.
   this.#transport.token=null;this.#transport.localToken='';
   if(lease)try{await this.#transport.release(lease);}catch{this.#message='Disconnected locally. Release was not confirmed; the game control session will expire.';}
- });}
+ },true);}finally{this.#disconnecting=false;}}
+ observation(){return structuredClone(this.#state);}
+ async submit(action){return this.#exclusive(async()=>{if(!this.#validLease(this.#lease)||this.#stale)throw Object.assign(new ConnectionError('Fresh state and connected control are required.'),{code:'ACTION_NOT_SENT'});await this.#transport.submit(this.#lease,action);});}
  view(){return structuredClone({authorized:Boolean(this.#key),agentIds:this.#ids,agent:this.#state?.agent??null,control:this.#state?.control??null,controlled:this.#validLease(this.#lease),receivedAt:this.#state?.receivedAt??null,stale:this.#stale,message:this.#message});}
 }

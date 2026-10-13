@@ -14,7 +14,10 @@ test('HTTP mission continues with no clients; stale commands and cross-site acce
  assert.equal((await send({type:'start',revision:initial.state.revision},{Origin:'https://example.com'})).status,403);
  const badHost=await new Promise(resolve=>http.get(base+'/mission/state',{headers:{Host:'evil.example'}},res=>{res.resume();resolve(res.statusCode);}));assert.equal(badHost,403);
  assert.equal((await send({type:'start',revision:initial.state.revision})).status,200);
- await new Promise(r=>setTimeout(r,300)); // zero polling or clients driving the clock
+ // Observe internal status without sending HTTP or driving the clock. A fixed
+ // 300ms sleep flaked when parallel durable-save tests contended for disk.
+ const deadline=Date.now()+3000;
+ while(service.runtime.snapshot().mission.status!=='complete'&&Date.now()<deadline)await new Promise(r=>setTimeout(r,20));
  const after=await(await fetch(base+'/mission/state')).json();assert.equal(after.state.mission.status,'complete');assert.equal(after.state.receipts.length,3);assert.equal(after.snapshot.view.agent.inventory.transit_actuator,1);
  assert.equal((await send({type:'start',revision:initial.state.revision})).status,409);
  assert.equal((await fetch(base+'/play/control',{method:'POST'})).status,404);

@@ -56,6 +56,10 @@ Owner switching/stale tabs cannot display or act as another owner. Credentials n
 
 ## Delivery
 
+### October 13 playable orchestrator increment
+
+The connection-only boundary below is historical. The shared orchestrator, paired stdio MCP bridge and new same-path playable sandbox are now implemented on PR #1. See [AI setup and measured coverage](ai-play.md) and [implementation evidence](superpowers/plans/2026-10-13-orchestrator-ai.md). The strategy engine remains separate. Native gameplay and actual Claude Code/Gemini execution are unverified; Codex state read succeeded, unattended mutation required host approval. No live agent was connected.
+
 - Private repository verified: https://github.com/PhelpsGG/midnight-city-companion (default main).
 - Draft PR #1: https://github.com/PhelpsGG/midnight-city-companion/pull/1, base main, branch codex/local-agent-setup. Attached to the current chat. No merge/deployment.
 - Main client is running disconnected on 62761; portable sandbox on 62762. Original sandbox 62759 remains available. Temporary synthetic observer 62763 stopped after QA.

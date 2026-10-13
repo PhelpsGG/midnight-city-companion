@@ -1,5 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+test('disconnect waits for an in-flight read, then clears secrets and releases control',async()=>{
+ let hold=false,releaseRead,started,releases=0;
+ const reading=new Promise(r=>started=r);
+ const c=new Connection({async authorizedAgents(){return ['river'];},async read(id){if(hold){started();await new Promise(r=>releaseRead=r);}return {agent:{id},control:{state:'uncontrolled'}};},async claim(agentId){return {agentId,sessionId:'fixture',token:'fixture',expiresAt:Date.now()+60000};},async heartbeat(l){return l;},async release(){releases++;}});
+ await c.authorize('synthetic');await c.select('river');await c.control();hold=true;const pending=c.refresh();await reading;
+ const disconnect=c.disconnect();releaseRead();await pending;await disconnect;
+ assert.equal(c.view().authorized,false);assert.equal(c.view().agent,null);assert.equal(releases,1);
+});
 import {Connection} from '../server/connection.mjs';
 
 function setup(options){

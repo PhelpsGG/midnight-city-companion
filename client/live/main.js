@@ -1,3 +1,4 @@
+import {goalPanel,journalPanel,aiPanel,actionLabel} from './play-panel.mjs';
 import {menuIcon} from './icons.mjs';
 import {createSessionClient} from './session.mjs';
 import {itemVisualFor} from '@/features/items/itemVisuals';
@@ -28,19 +29,30 @@ function render(){
  const a=view.agent,active=document.activeElement?.id,scroll=$('panel').scrollTop;
  $('character-name').textContent=a?.name||a?.id||'Not connected';$('character-place').textContent=a?.position?title(a.position.spaceId):a?'Location not reported':'Local companion';
  $('resources').textContent=a?`♥ ${a.vitals?.health??a.vitals?.hp??'?'} / ${a.vitals?.maxHealth??a.vitals?.maxHp??'?'}   ◈ ${a.inventory?.crystal??'?'} crystals`:'Observed resources appear here.';
- $('connection-badge').textContent=!a?'DISCONNECTED':view.stale?'LAST OBSERVATION':view.controlled?'CONTROL CONNECTED':'OBSERVATION ONLY';
+ $('connection-badge').textContent=(session?.mode==='sandbox'?'SANDBOX · ':'')+(!a?'DISCONNECTED':view.stale?'LAST OBSERVATION':view.controlled?'CONTROL CONNECTED':'OBSERVATION ONLY');
  $('connection-message').textContent=error||view.message||'Connect your own existing self-hosted agent.';$('connection-message').classList.toggle('error',Boolean(error||view.stale));
  $('refresh').disabled=busy||!a;$('follow').disabled=!a?.position;$('follow').textContent=following&&a?`◎ Following ${a.name||a.id}`:'◎ Follow character';
  const activity=activityFor(a,{content:catalog});$('status').innerHTML=a?`<b>${esc(activity.label)}</b><small>${esc(activity.detail)}${view.stale?' · Last observation':''}</small>`:'No character connected.';
- const gains=Object.entries(a?.skills??{}).map(([id,s])=>({id,gain:s.xp-(baseline[id]?.xp??s.xp)})).filter(s=>s.gain>0);
+ const runtime=session?.runtime;const current=runtime?.jobs?.find(j=>['submitting','pending','uncertain'].includes(j.status));if(runtime&&a)$('status').innerHTML+=`<small class="goal-status">${esc(runtime.goal||'Choose your next goal')} · ${esc(current?actionLabel(current.action)+' · '+current.status:runtime.mode)}</small>`;
+ const gains=Object.entries(a?.skills??{}).map(([id,s])=>({id,gain:s.xp-(session?.runtime?.baseline?.[id]?.xp??baseline[id]?.xp??s.xp)})).filter(s=>s.gain>0);
  $('xp-tracker-body').innerHTML=gains.length?gains.map(g=>`<button class="xp-track-row" data-xp-skill="${esc(g.id)}"><span class="xp-track-name">${esc(title(g.id))}</span><b>+${g.gain.toLocaleString()} <span>XP</span></b></button>`).join(''):`<p class="xp-track-empty">${a?'No XP gained since opening this character.':'Connect a character to begin tracking.'}</p>`;
  if(!$('tabs').children.length)$('tabs').innerHTML=tabs.map(n=>`<button role="tab" id="tab-${n}" aria-controls="panel"><span aria-hidden="true">${menuIcon(n)}</span>${n}</button>`).join('');
  for(const n of tabs){const b=$('tab-'+n);b.setAttribute('aria-selected',String(n===tab));b.tabIndex=n===tab?0:-1;b.onclick=()=>{tab=n;lastHTML='';render();b.focus();};}
  $('panel').setAttribute('aria-labelledby','tab-'+tab);
- let html=tab==='Connection'?connectionPanel(view):!a?'<h2>Connect your character</h2><p>Use Connection to load your own observed inventory and stats.</p>':tab==='Inventory'?inventoryPanel(a,catalog.items,icon):tab==='Skills'?skillsPanel(a,catalog.skillIds):tab==='Contracts'?contractsPanel(api.snapshot.contracts,contracts,{esc,icon,name:id=>names.get(id)??title(id)},{busy,live:true}):tab==='Goals'?'<small>NEXT MILESTONE</small><h2>Your goals</h2><p>Browse Contracts, recipes and skill unlocks in the Field guide to explore what to work toward.</p><div class="empty-state"><h3>Live missions aren’t connected yet</h3><p>This first portable client verifies your character and control connection. Planning and action execution will be connected separately.</p></div>':'<small>THIS CONNECTION</small><h2>Journal</h2><p>No gameplay actions have been sent by this client.</p><p class="sub">Your character may still progress under another controller. Observed session XP appears in the floating tracker.</p>';
+ let html=tab==='Connection'?connectionPanel(view)+(session?aiPanel(session):''):!a?'<h2>Connect your character</h2><p>Use Connection to load your own observed inventory and stats.</p>':tab==='Inventory'?inventoryPanel(a,catalog.items,icon):tab==='Skills'?skillsPanel(a,catalog.skillIds):tab==='Contracts'?contractsPanel(api.snapshot.contracts,contracts,{esc,icon,name:id=>names.get(id)??title(id)},{busy,live:true}):tab==='Goals'?goalPanel(session):journalPanel(session);
  if(tab==='Contracts'&&guide.canResume)html='<button id="return-to-guide" class="text-button">← Return to field guide</button>'+html;
+ if(session?.mode==='sandbox'&&!view.authorized)html='<div class="sandbox-note"><b>PLAYABLE SANDBOX</b><p>Use <code>sandbox-test-key</code>. Characters, recipes and rewards here are synthetic. Your live agent is disconnected.</p></div>'+html;
  if(!session)html='<h2>Open your local connection</h2><p>Reload to synchronize this tab with the local server.</p><button id="reload-session" class="primary wide">Reload connection</button>';
- if(html!==lastHTML){$('panel').innerHTML=html;lastHTML=html;
+ if(html!==lastHTML){const drafts=new Map([...$('panel').querySelectorAll('#goal-text,#action-choice,#action-quantity,#move-x,#move-y')].map(el=>[el.id,el.value]));$('panel').innerHTML=html;lastHTML=html;
+  for(const [id,value] of drafts){const el=$(id);if(el){el.value=value;if(el.tagName==='SELECT'&&!el.value)el.selectedIndex=0;}}
+  $('goal-form')?.addEventListener('submit',e=>{e.preventDefault();void request('command',{command:{type:'goal',text:$('goal-text').value}});});
+  $('action-form')?.addEventListener('submit',e=>{e.preventDefault();const choice=session.choices[Number($('action-choice').value)];if(!choice)return;const action={...choice.action};if(action.kind==='craft')action.batches=Number($('action-quantity').value);void request('command',{command:{type:'enqueue',requestId:crypto.randomUUID(),action}});});
+  const quantity=()=>{const choice=session?.choices?.[Number($('action-choice')?.value)];if(!$('action-quantity'))return;const craft=choice?.action.kind==='craft';$('action-quantity').disabled=!craft;$('action-quantity').max=choice?.maxBatches??1;$('batch-hint').textContent=craft?'Game currently allows up to '+choice.maxBatches+' batches.':'One action; quantities are decided by the game.';};$('action-choice')?.addEventListener('change',quantity);quantity();
+  $('move-form')?.addEventListener('submit',e=>{e.preventDefault();void request('command',{command:{type:'enqueue',requestId:crypto.randomUUID(),action:{kind:'move_to',destination:{spaceId:view.agent.position.spaceId,x:Number($('move-x').value),y:Number($('move-y').value)}}}});});
+  for(const b of $('panel').querySelectorAll('[data-command]'))b.onclick=()=>void request('command',{command:{type:b.dataset.command}});
+  $('open-connection')?.addEventListener('click',()=>{tab='Connection';render();});
+  $('pair-ai')?.addEventListener('click',()=>void request('pair'));
+  $('revoke-ai')?.addEventListener('click',()=>void request('revoke'));
   $('reload-session')?.addEventListener('click',()=>location.reload());
   $('key-form')?.addEventListener('submit',e=>{e.preventDefault();const key=$('agent-key').value;$('agent-key').value='';void request('discover',{key});});
   $('agent-form')?.addEventListener('submit',e=>{e.preventDefault();void request('select',{id:$('agent-choice').value});});
@@ -53,7 +65,7 @@ function render(){
   for(const b of $('panel').querySelectorAll('[data-guide]'))b.onclick=()=>guide.open({kind:b.dataset.guide,id:b.dataset.id});
   if(active)$(active)?.focus({preventScroll:true});$('panel').scrollTop=scroll;
  }
- for(const b of $('panel').querySelectorAll('form button,#connect-control,#disconnect'))b.disabled=busy;
+ for(const b of $('panel').querySelectorAll('#key-form button,#agent-form button,#connect-control,#disconnect,#pair-ai,#revoke-ai'))b.disabled=busy;
  for(const b of $('xp-tracker-body').querySelectorAll('[data-xp-skill]'))b.onclick=()=>{tab='Skills';render();guide.open({kind:'skill',id:b.dataset.xpSkill});};
  guide.render();
 }
@@ -64,5 +76,5 @@ $('tabs').onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.k
 document.addEventListener('keydown',e=>{if(e.key==='Escape')guide.close();});
 draggable('activity','drag');draggable('xp-tracker','xp-drag');render();
 connection.open().then(s=>{session=s;view=s.view;characterId=view.agent?.id??null;baseline=structuredClone(view.agent?.skills??{});if(characterId)tab='Inventory';world.set(view);render();}).catch(()=>{error='Local service unavailable. Start the server and reload.';render();});
-const timer=setInterval(()=>{if(view.agent&&!document.hidden)void request('refresh',{},true);},5000);
+const timer=setInterval(()=>{if(view.agent&&!document.hidden)void request('refresh',{},true);},2000);
 window.addEventListener('pagehide',()=>{clearInterval(timer);world.clear();});
