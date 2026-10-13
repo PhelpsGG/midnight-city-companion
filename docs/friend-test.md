@@ -1,10 +1,14 @@
-# Friend test: download, connect, play with your own AI
+# Connect your real Midnight City agent to the companion and your AI
+
+The intended result is **your existing character in the live Midnight City game**, visible in the companion and controllable through your own AI. The live transport and orchestrator are included in this PR; you do not need the separate strategy engine. The sandbox is an optional installation check, not the final product or a prerequisite for connecting your character.
+
+This is an early private alpha: live gameplay and Gemini host execution still need acceptance testing. Connection support is implemented; complete real-game compatibility is not yet verified.
 
 Use **Gemini CLI**, **Claude Code**, or a local **Codex** host with stdio MCP support. A normal Gemini/Claude web conversation cannot directly launch this local MCP server. Use your existing AI login/subscription; the companion does not ask for a model API key.
 
 The repository is private. PhelpsGG must give your GitHub account access before cloning. This is PR [#1](https://github.com/PhelpsGG/midnight-city-companion/pull/1), branch `codex/local-agent-setup`. Do not merge the PR to test it.
 
-## 1. Download and start the sandbox
+## 1. Download and start the live client
 
 Install Node.js 24+ and Git. In a new project directory:
 
@@ -13,16 +17,16 @@ git clone --branch codex/local-agent-setup https://github.com/PhelpsGG/midnight-
 cd midnight-city-companion
 npm ci
 npm run setup
-npm run sandbox
+npm start
 ```
 
-Leave the last command running and open http://127.0.0.1:62764/. Setup needs internet access for hash-pinned public game renderer modules. It does not need the engine repository, game credentials or somebody else's cache. If a port is occupied, identify the existing process instead of killing it blindly; use a process-local `PORT` override if needed.
+Leave the last command running and open http://127.0.0.1:62761/. The client starts disconnected. Setup needs internet access for hash-pinned public game renderer modules. It does not need the engine repository, game credentials or somebody else's cache. If a port is occupied, identify the existing process instead of killing it blindly; use a process-local `PORT` override if needed.
 
 In **Connection**:
 
-1. Enter `sandbox-test-key` and select `sandbox-river` (River).
-2. Choose **Connect control**. This is a synthetic character only.
-3. Choose **Enable AI connection**.
+1. Enter **your own existing Own AI agent key in the companion UI**, choose your returned character, and verify its name/inventory in observation mode. Never paste a real key into an AI conversation. An offline character may require the explicit control step before its full state is available.
+2. Stop any existing controller yourself, then choose **Connect control**. The client does not take over an active or unverifiable controller. This does not create a new account or switch a Hosted AI agent to Own AI.
+3. Choose **Enable AI connection** for this live character.
 4. Copy the generated configuration for your AI. This contains local file paths, not the game key or pairing-file contents.
 
 ## 2. Connect your AI
@@ -39,7 +43,17 @@ Use normal interactive tool approvals. Do not enable bypass/YOLO modes, `trust: 
 
 These local configuration files are ignored by Git. Do not commit pairing files, credentials, personal configuration or raw diagnostic logs. You may need a new AI conversation after adding the server; an existing conversation cannot be assumed to acquire new tools automatically.
 
-## 3. Test using real MCP tools
+## 3. Confirm your live connection and choose what to do
+
+Ask your AI to call `companion_state` and show the returned **live** mode, agent ID/name, control state, inventory, skills and currently available actions. Confirm that it is your character and the GUI agrees. If state is stale, control is missing, or the wrong character/mode appears, fix the connection before any gameplay. Tool names may have a host-specific prefix.
+
+Then give the AI a specific first instruction using an available action. It should preserve the requested quantity, obtain any host approval, queue it through `companion_action`, and read state until a matching receipt confirms the outcome. Queued/pending is not complete. Stop on an uncertain result or lost control rather than submitting the same work with a new request ID. The Journal should show the confirmed **Your AI** action, with inventory and XP matching the observed game state.
+
+There are currently 11 supported action kinds; see [coverage and limitations](ai-play.md#action-coverage). A saved goal is not an automatic optimal plan. Keep Node running for queued actions to finish without the browser, and keep the AI host active for further decisions. Restarting requires reconnecting the key/control, pairing again and reviewing the paused queue before explicit resume.
+
+## Optional: test the connection in the sandbox first
+
+Use `npm run sandbox` and http://127.0.0.1:62764/ instead of the live service. Enter `sandbox-test-key`, select `sandbox-river`, choose **Connect control**, then **Enable AI connection**. Use that service's generated configuration. Sandbox and live pairings are distinct: revoke the previous one and update your host configuration when switching. Do not reuse sandbox recipe IDs or expected outcomes in the live game.
 
 Ask your AI to call `companion_state` first. The tool may have a host-specific prefix. Verify the returned mode is **sandbox** and identity is **sandbox-river** before approving an action. A plain-text claim that it connected is not evidence.
 
@@ -73,26 +87,28 @@ Also check:
 - Revoke the AI connection in the GUI. A later MCP read should fail, not retain access.
 - Restart the companion service. Character progress/history should survive, while control and AI pairing require reconnecting. Review the paused queue before resuming. Generate a new pairing and update its path in the host config.
 
-## 4. Connect your real agent only when you are ready
-
-The sandbox and real client are separate services and saves. Stop/revoke the sandbox pairing before switching your host configuration. Start `npm start` and open http://127.0.0.1:62761/. Enter **your own existing Own AI agent key in the companion UI**, choose your returned character, and verify its name/inventory in observation mode. Never paste a real key into an AI conversation.
-
-Stop any existing controller yourself before choosing **Connect control**. Do not take over someone else's session or switch a Hosted AI agent to Own AI as part of this test. Enable a new AI connection and update the host configuration. Ask the AI to read state first, confirm **live** mode and the correct agent, then choose and explicitly authorize your first real action. The sandbox setup prompt below does not authorize live gameplay or spending. See [action coverage and limits](ai-play.md#action-coverage).
-
 ## Copy/paste setup prompt for Gemini
 
 Give this to **Gemini CLI with local terminal/file access**, starting in an empty folder where you want the project. It includes a checkpoint for the restart needed to load new tools.
 
 ```text
-Help me install and test the Midnight City Companion from this private PR:
+Help me install the Midnight City Companion and connect MY EXISTING REAL
+Midnight City agent so I can play through the companion and Gemini:
 https://github.com/PhelpsGG/midnight-city-companion/pull/1
 Repository: https://github.com/PhelpsGG/midnight-city-companion.git
 Branch: codex/local-agent-setup
 
-This authorizes local setup and synthetic sandbox testing only. Preserve
-existing files, settings and saves. Do not merge/deploy, connect a live agent,
-spend anything, change global permissions, enable YOLO/trust bypasses, or
-print credentials/pairing-file contents. Keep all services on 127.0.0.1.
+The end result should be my live character connected, my real inventory and
+stats visible, and Gemini able to call the companion MCP tools for the goals
+and actions I choose. The separate strategy engine is not required.
+
+Preserve existing files, settings and saves. Keep services on 127.0.0.1.
+Do not merge/deploy, create an agent, switch a Hosted AI account to Own AI,
+take over another controller, change global permissions, enable approval
+bypasses, or print credentials/pairing-file contents. I will enter my key
+directly in the companion and explicitly connect control. Setup does not
+authorize spending or other in-world actions; ask me for my first mission
+once the live connection has been verified.
 
 1. Check my OS, Git, Node.js (24+), npm and repository access. If access or
    login is missing, tell me the exact human step and stop at that boundary;
@@ -101,30 +117,39 @@ print credentials/pairing-file contents. Keep all services on 127.0.0.1.
    Read AGENTS.md, README.md, docs/ai-play.md and docs/friend-test.md.
 2. Run npm ci, npm run setup and npm test, checking each exit code. Report
    actual failures; do not silently patch the product to make the test pass.
-   Start npm run sandbox in a persistent local terminal and show its URL.
-3. Guide me through entering sandbox-test-key, selecting River, clicking
-   Connect control and Enable AI connection. If you have browser tools,
-   you may do these synthetic-only setup steps. Otherwise ask me to paste
-   the generated MCP CONFIGURATION, not the contents of its pairing file.
+   Start npm start in a persistent local terminal and open/show the live
+   client URL, normally http://127.0.0.1:62761/. Sandbox testing is optional;
+   do not stop at a synthetic character and call the live setup complete.
+3. Guide me through entering my existing Own AI agent key directly in the
+   UI, selecting the correct real character and checking its observed state.
+   Explain any offline or existing-controller status. Have me stop an old
+   controller if necessary, then explicitly click Connect control and Enable
+   AI connection. If you cannot inspect the UI, ask for its generated MCP
+   CONFIGURATION only, never my key or the pairing-file contents.
 4. Merge only the generated midnight-city server entry into this project's
    .gemini/settings.json, preserving all existing settings. Use the local
    absolute paths and normal interactive tool confirmations. Validate JSON.
    If tools are not loaded, write a short secret-free checkpoint under
    .local/gemini-test-checkpoint.md and tell me to restart Gemini from this
    project, inspect /mcp, and say: Continue the test from the local checkpoint.
-5. Once MCP tools are available, follow the play test in docs/friend-test.md:
-   call companion_state, verify sandbox identity and fresh state, record the
-   baseline, craft five practice planks, wait for a confirmed receipt,
-   deliver the practice contract once if available, then pause. Use actual
-   companion MCP tool calls, not shell/HTTP substitutes. Keep stable request
-   IDs. Never resubmit uncertain work under a new ID. If the fixture was
-   already used, preserve it and explain the baseline before proceeding.
-6. Verify that the GUI inventory/XP and Your AI Journal receipts agree.
-   Test closing/returning, revocation and restart as the guide describes.
-   Stop before live gameplay. Save a sanitized report to
-   .local/gemini-test-report.md with OS, Node/Gemini versions, commit SHA,
-   tool calls and confirmed outcomes, failures and reproduction steps.
-   Do not include keys, tokens, private configuration or raw unredacted logs.
+5. Call the actual companion_state MCP tool. Verify mode is live, the agent
+   is the real character I selected, control is connected and state is fresh.
+   Show me identity, current activity, real inventory, skills and available
+   actions. Confirm that the GUI agrees. Report missing tools, rejected keys,
+   approval blocks or unsupported actions honestly. Do not fake success or
+   use shell/HTTP gameplay calls instead of the MCP tools.
+6. Ask what I want my real character to do first. Once I give that mission,
+   use current game capabilities to propose feasible supported actions and
+   execute only what I authorize, through companion_action with normal host
+   approvals. Preserve exact quantities and stable request IDs. Confirm each
+   receipt before reporting completion or continuing. Never resubmit uncertain
+   work under a new ID. Do not use synthetic recipe IDs or assume the engine
+   has produced an optimal plan.
+7. Save a sanitized setup/test report to .local/gemini-test-report.md with
+   OS, Node/Gemini versions, commit SHA, live connection checks, actual tool
+   results, failures and reproduction steps. Exclude keys, tokens, private
+   configuration and raw unredacted logs. Explain how to pause, revoke AI
+   access, disconnect, restart and reconnect my live character.
 ```
 
 Send the sanitized report back to PhelpsGG. Distinguish a denied host approval, setup/configuration failure, MCP failure and an unconfirmed game outcome. Gemini and Claude host execution are pending independent tester verification; a passing protocol test is not a claim that all hosts were tested.

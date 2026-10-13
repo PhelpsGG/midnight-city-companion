@@ -6,14 +6,14 @@ The GUI is the player's view and controls. The orchestrator owns the connection,
 
 For a fresh download, host-specific steps, expected outcomes and a complete Gemini setup prompt, use the [friend test guide](friend-test.md).
 
-1. Start `npm run sandbox`, connect with `sandbox-test-key`, select a synthetic character and explicitly **Connect control**.
+1. Start `npm start`, open the live client on `http://127.0.0.1:62761/`, enter your own existing Own AI agent key in the UI, select your real character and explicitly **Connect control** after stopping any other controller. For an optional synthetic test instead, use `npm run sandbox` on `62764` with `sandbox-test-key`.
 2. In Connection, choose **Enable AI connection**. The paired host may submit the allowlisted gameplay actions for this character. It still applies its own tool approvals.
 3. Add the displayed configuration, preserving your existing settings:
    - **Codex:** `.codex/config.toml`, using the displayed `[mcp_servers.midnight-city]` block in a trusted project.
    - **Claude Code:** project `.mcp.json`, using the displayed `mcpServers` object. Review the server approval prompt.
    - **Gemini CLI:** project `.gemini/settings.json`, using the displayed `mcpServers` object. Keep normal tool confirmation enabled.
 4. Start a new host conversation. Ask it to call `companion_state` and verify the selected agent and sandbox/live mode.
-5. Try: “Read the sandbox character. Craft five practice planks, wait for a confirmed receipt, then report inventory and XP. Stop if control or the outcome is uncertain.” Review the action approval when your host presents it.
+5. For your real character, choose a first mission based on its returned capabilities and approve the requested action normally. Wait for a confirmed receipt before treating it as complete. The five-practice-plank test in the friend guide is **sandbox only**; never send its fixture IDs to the live game.
 
 Generated configurations use absolute Node/script/pair-file paths. The private pairing file contains a local bearer credential, never the game key/lease. Do not share its contents or commit it. Revoke in Connection to remove access. Disconnect and service restart invalidate pairing. A new pairing creates a new path; update your host settings accordingly.
 
