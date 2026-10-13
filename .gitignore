@@ -7,3 +7,8 @@ dist/
 **/account.json
 **/*session*.json
 **/*lease*.json
+# Per-installation AI configuration may contain private paths or credentials.
+.mcp.json
+.gemini/settings.json
+.codex/config.toml
+.claude/settings.local.json

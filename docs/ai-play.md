@@ -4,6 +4,8 @@ The GUI is the player's view and controls. The orchestrator owns the connection,
 
 ## Setup
 
+For a fresh download, host-specific steps, expected outcomes and a complete Gemini setup prompt, use the [friend test guide](friend-test.md).
+
 1. Start `npm run sandbox`, connect with `sandbox-test-key`, select a synthetic character and explicitly **Connect control**.
 2. In Connection, choose **Enable AI connection**. The paired host may submit the allowlisted gameplay actions for this character. It still applies its own tool approvals.
 3. Add the displayed configuration, preserving your existing settings:
@@ -47,6 +49,7 @@ The synthetic world supports four action families with authored test quantities 
 
 - Automated tests launch the real stdio MCP bridge with the official SDK client and exercise advertised tools, shared confirmed inventory/XP, movement/contracts, pause, revocation and durable restart.
 - Installed Codex CLI initialized the server and successfully read the synthetic character with `companion_state`. Its unattended action call was blocked: “MCP tool call requires approval, but approval policy is never.” No permissions or user configuration were widened. Interactive approval-to-action in Codex remains unverified.
+- The installed Codex runtime (`0.162.0-alpha.17.2`) was also exercised through its app-server protocol with normal human approvals and a fresh isolated synthetic character. It discovered the MCP tools, read the expected 30 wood / 12 crystals / 0 Crafting XP and requested approval for exactly five practice-plank batches. This proves discovery, state reading and the approval request path; it does not prove execution until the human approval and confirmed receipt are recorded. The test uses the Codex model/runtime, not a scripted MCP client pretending to be Codex.
 - Claude Code and Gemini CLI were not installed in this environment. Their documented configuration is provided; actual host execution is unverified.
 
 Official references: [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli), [Claude Code MCP](https://code.claude.com/docs/en/mcp), [Gemini CLI MCP](https://geminicli.com/docs/tools/mcp-server/).

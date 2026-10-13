@@ -2,6 +2,8 @@
 
 A local custom client for your existing self-hosted Midnight City agent, with a shared orchestrator, bring-your-own-AI connection and playable sandbox. Early prototype; unaffiliated with Midnight City. The strategy engine remains separate and is not bundled.
 
+**Testing this PR with your own AI?** Start with the [friend setup guide and copy/paste Gemini prompt](docs/friend-test.md). The private repository requires access from PhelpsGG.
+
 ## Run locally
 
 Install Node.js 24+ and Git, then:
