@@ -2,11 +2,11 @@
 
 The intended result is **your existing character in the live Midnight City game**, visible in the companion and controllable through your own AI. The live transport and orchestrator are included in this PR; you do not need the separate strategy engine. The sandbox is an optional installation check, not the final product or a prerequisite for connecting your character.
 
-This is an early private alpha: live gameplay and Gemini host execution still need acceptance testing. Connection support is implemented; complete real-game compatibility is not yet verified.
+This is an early alpha: live gameplay and Gemini host execution still need acceptance testing. Connection support is implemented; complete real-game compatibility is not yet verified.
 
 Use **Gemini CLI**, **Claude Code**, or a local **Codex** host with stdio MCP support. A normal Gemini/Claude web conversation cannot directly launch this local MCP server. Use your existing AI login/subscription; the companion does not ask for a model API key.
 
-The repository is private. PhelpsGG must give your GitHub account access before cloning. This is PR [#1](https://github.com/PhelpsGG/midnight-city-companion/pull/1), branch `codex/local-agent-setup`. Do not merge the PR to test it.
+The repository is public. No invitation is required to clone it or open a pull request from your own fork. A collaborator invitation grants direct write access after you accept it. This is PR [#1](https://github.com/PhelpsGG/midnight-city-companion/pull/1), branch `codex/local-agent-setup`. Do not merge the PR to test it.
 
 ## 1. Download and start the live client
 

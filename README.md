@@ -2,7 +2,7 @@
 
 A local custom client for your existing self-hosted Midnight City agent, with a shared orchestrator, bring-your-own-AI connection and playable sandbox. Early prototype; unaffiliated with Midnight City. The strategy engine remains separate and is not bundled.
 
-**Testing this PR with your own AI?** Start with the [friend setup guide and copy/paste Gemini prompt](docs/friend-test.md). The private repository requires access from PhelpsGG.
+**Testing this PR with your own AI?** Start with the [friend setup guide and copy/paste Gemini prompt](docs/friend-test.md). The repository is public; no invitation is required to clone it or open a pull request from a fork.
 
 ## Run locally
 
@@ -83,4 +83,4 @@ All services bind to `127.0.0.1`; do not expose them publicly. Credentials, bund
 
 This carries forward companion UI and sandbox development from the local `dlynch76dl-hub/midnight-city-companion-app` prototype. Native renderer code, art and game definitions originate from Midnight City; they are not represented as original companion work. Renderer sources/art/bundles are downloaded locally and excluded from Git.
 
-See [THIRD_PARTY.md](THIRD_PARTY.md). This private development repository does not resolve upstream licensing or supported integration/distribution arrangements. Those remain prerequisites for a public release.
+See [THIRD_PARTY.md](THIRD_PARTY.md). Publishing this development repository does not resolve upstream licensing or supported integration/distribution arrangements. Those remain prerequisites for a supported product release.
