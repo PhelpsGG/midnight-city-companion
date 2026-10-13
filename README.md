@@ -34,6 +34,15 @@ In **Goals**, save your objective, choose a currently available action and speci
 - Durable shared action queue, pause/stop/resume, exact craft batches, receipt confirmation, duplicate-request protection and uncertain-outcome blocking.
 - Local stdio MCP tools for state/capabilities, saved catalog search, goals, gameplay actions and pause/stop.
 - A playable synthetic observer using the same GUI, orchestrator and MCP bridge; the older actuator-mission sandbox also remains available separately.
+- **While you were away:** a durable welcome-back report with observed XP/level changes, contracts, item receipts versus inventory changes, recorded conversations and current work. Reopen the latest report from Journal.
+
+## Returning to your character
+
+Opening a character for the first time establishes a visit checkpoint. After time away, the report compares that checkpoint with a fresh observation. Continue playing or one of its detail buttons acknowledges the report; failed saves leave it unread. Closing without acknowledgement preserves it. AI reads and background work never mark a report seen, and visible tabs share a visit. Reports belong to the selected character.
+
+Visible pages report presence every 15 seconds. Leaving/closing sends a best-effort departure notice; if a browser drops it, 60 seconds without visible presence establishes an absence. A rapid forced close/reopen may therefore count as the same visit. Keep the local Node service running for queued work and continuous event recording. Service restart retains the report/checkpoint but requires reconnecting, and explicitly warns about the recording gap.
+
+XP, levels, contract completions and inventory changes come from observed state. Collected/used totals use only explicit event receipts and may be partial; a net inventory change is not a count of everything acquired. Social activity counts recorded messages, identified threads and partners. Native connection/relationship gains are unavailable until a confirmed counter is provided. Missing observations, event-window gaps and bounded history are labeled. Reports do not store conversation text. Visit history is local and shared by browser sessions using this installation, not a cloud account or per-person record.
 
 ## Limits
 
@@ -52,6 +61,8 @@ npm run sandbox
 ```
 
 Open **http://127.0.0.1:62764/**. Use `sandbox-test-key`, choose River or Juniper and Connect control. In Goals, choose **Craft · sandbox plank**, enter **5** batches and queue it. Confirm five planks and +50 Crafting XP, then deliver the practice contract for ten synthetic crystals. Pair your AI from Connection to use exactly the same runtime. These are authored fixtures, not native mechanics. Gameplay never falls back to production; public art is used for rendering.
+
+To try the return report, queue a craft and close the page before it finishes, leave the service running, then reopen after a minute. The report shows the new XP, planks collected and wood used. Dismiss it, then use **Journal → While you were away** to reopen it. Reports/checkpoints persist under the runtime's `visits` directory; playable sandbox and normal client histories are separate.
 
 The older actuator missions are available via `npm run sandbox:legacy` on 62762 with their existing separate saves. See [legacy sandbox persistence](client/hybrid/mission/README.md).
 

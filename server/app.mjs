@@ -5,6 +5,7 @@ import {resolve,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {Connection,ConnectionError} from './connection.mjs';
 import {Orchestrator} from './orchestrator.mjs';
+import {AwayReports} from './away-reports.mjs';
 import {lookupCatalog} from './catalog.mjs';
 import {LiveTransport} from '../client/play/live.mjs';
 import {publicResource,streamWorld} from './public-world.mjs';
@@ -17,13 +18,15 @@ async function body(req){
  try{const parsed=JSON.parse(value);if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw Error();return parsed;}catch{throw new ConnectionError('Invalid request.',400);}
 }
 export async function createServer({port=62761,transportFactory=()=>new LiveTransport(),asset=publicResource,stream=streamWorld,now=Date.now,ttlMs=30*60*1000,directory,pairingDirectory=resolve('.local/ai'),pulseMs=0,mode='live'}={}){
- const runtime=await Orchestrator.open({directory,now});
+ const reports=await AwayReports.open({directory:directory?join(directory,'visits'):undefined,now});
+ let runtime;try{runtime=await Orchestrator.open({directory,now,onObservation:s=>reports.observe(s)});}catch(e){await reports.close();throw e;}
  const sessions=new Map(),claims=new Map(),pairs=new Map();let origin,closing=false,ticking=false;
  const project=s=>runtime.snapshot(s.connection);
- const visible=s=>({csrf:s.csrf,revision:s.revision,view:s.connection.view(),mode,runtime:project(s).runtime,choices:project(s).choices,ai:s.ai??null});
+ const record=async s=>{if(!s.connection.view().stale)await reports.observe(s.connection.observation()).catch(()=>{});};
+ const visible=s=>({csrf:s.csrf,revision:s.revision,view:s.connection.view(),mode,runtime:project(s).runtime,choices:project(s).choices,ai:s.ai??null,away:reports.view(s.connection.view().agent?.id)});
  const revoke=async s=>{if(s.pair){pairs.delete(s.pair);s.pair=null;}if(s.ai)await unlink(s.ai.connectionFile).catch(()=>{});s.ai=null;};
  const dispose=async s=>{await revoke(s);try{await runtime.detach(s.connection);}finally{for(const close of s.streams)close();await s.connection.disconnect().catch(()=>{});}};
- const routes={'/api/discover':['authorize','key'],'/api/select':['select','id'],'/api/control':['control'],'/api/refresh':['refresh'],'/api/disconnect':['disconnect'],'/api/command':['command','command'],'/api/pair':['pair'],'/api/revoke':['revoke']};
+ const routes={'/api/discover':['authorize','key'],'/api/select':['select','id'],'/api/control':['control'],'/api/refresh':['refresh'],'/api/disconnect':['disconnect'],'/api/command':['command','command'],'/api/pair':['pair'],'/api/revoke':['revoke'],'/api/visit':['visit','visit']};
  const files={'/':['../client/live/index.html','text/html'],'/client.js':['../.local/build/client.js','text/javascript'],'/style.css':['../client/hybrid/style.css','text/css'],'/live.css':['../client/live/style.css','text/css'],'/contracts.css':['../client/hybrid/contracts/style.css','text/css'],'/discovery.css':['../client/hybrid/discovery/style.css','text/css']};
  const server=http.createServer(async(req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','no-referrer');
@@ -39,7 +42,7 @@ export async function createServer({port=62761,transportFactory=()=>new LiveTran
     const authorized=()=>pairs.get(token)===s&&s.pair===token&&s.connection.view().agent?.id===agentId;
     const input=await body(req);if(!authorized())throw new ConnectionError('AI pairing revoked.',401);if(Object.keys(input).some(k=>!['op','command','kind','query'].includes(k)))throw new ConnectionError('Invalid bridge request.',400);
     if(input.op==='command'){await runtime.command(s.connection,input.command,'ai',authorized);if(!authorized())throw new ConnectionError('AI pairing revoked.',401);reply(res,200,project(s));}
-    else if(input.op==='state'){await s.connection.refresh();if(!authorized())throw new ConnectionError('AI pairing revoked.',401);reply(res,200,{mode,connection:s.connection.view(),...project(s)});}
+    else if(input.op==='state'){await s.connection.refresh();await record(s);if(!authorized())throw new ConnectionError('AI pairing revoked.',401);reply(res,200,{mode,connection:s.connection.view(),...project(s)});}
     else if(input.op==='catalog'){reply(res,200,await lookupCatalog(input));}
     else throw new ConnectionError('Unknown bridge operation.',400);return;
    }
@@ -65,6 +68,11 @@ export async function createServer({port=62761,transportFactory=()=>new LiveTran
     session.busy=true;
     try{
      if(method==='command')await runtime.command(session.connection,input.command,'gui');
+     else if(method==='visit'){
+      await session.connection.refresh();await record(session);
+      if(session.connection.view().stale)throw new ConnectionError('A fresh observation is required for the return report.');
+      await reports.visit(session.connection.view().agent?.id,input.visit);
+     }
      else if(method==='revoke')await revoke(session);
      else if(method==='pair'){
       if(!session.connection.view().controlled)throw new ConnectionError('Connect control before pairing an AI.');
@@ -72,7 +80,7 @@ export async function createServer({port=62761,transportFactory=()=>new LiveTran
       await mkdir(pairingDirectory,{recursive:true});await writeFile(connectionFile,JSON.stringify({origin,bearer,agentId:session.connection.view().agent.id}),{mode:0o600,flag:'wx'});
       session.pair=bearer;pairs.set(bearer,session);session.ai={connectionFile,command:process.execPath,args:[fileURLToPath(new URL('../ai/mcp.mjs',import.meta.url)),'--connection',connectionFile]};
      }else if(method==='disconnect')await dispose(session);
-     else {await session.connection[method](arg?input[arg]:undefined);if(method==='control')await runtime.attach(session.connection);}
+     else {await session.connection[method](arg?input[arg]:undefined);if(method==='control')await runtime.attach(session.connection);await record(session);}
      if(['authorize','select','control','disconnect'].includes(method))session.revision++;
      renew();reply(res,200,visible(session));
     }finally{session.busy=false;}return;
@@ -83,9 +91,9 @@ export async function createServer({port=62761,transportFactory=()=>new LiveTran
    const resource=await asset(route);if(!resource){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':resource.type,'Cache-Control':'public,max-age=300'});res.end(resource.data);
   }catch(e){if(!res.headersSent)reply(res,e instanceof ConnectionError?e.status:502,{error:e instanceof ConnectionError?e.message:'The game resource is unavailable. Try again.',...(e.invalidateSession?{invalidateSession:true}:{})});else res.end();}
  });
- try{await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,'127.0.0.1',resolve);});}catch(e){await runtime.close();throw e;}origin='http://127.0.0.1:'+server.address().port;
+ try{await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(port,'127.0.0.1',resolve);});}catch(e){await runtime.close();await reports.close();throw e;}origin='http://127.0.0.1:'+server.address().port;
  const pulse=async()=>{if(ticking||closing)return;ticking=true;try{await runtime.pulse();}finally{ticking=false;}};
  const timer=setInterval(()=>{for(const [id,s] of sessions)if(!s.busy&&now()-s.seen>ttlMs&&!(pulseMs>0&&s.connection.view().controlled)){sessions.delete(id);void dispose(s).catch(()=>{});}},10000);timer.unref();
  const runner=pulseMs>0?setInterval(()=>void pulse().catch(()=>{}),pulseMs):null;runner?.unref();
- return {origin,pulse,async close(){if(closing)return;closing=true;clearInterval(timer);clearInterval(runner);await Promise.allSettled([...sessions.values()].map(dispose));sessions.clear();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await runtime.close();}};
+ return {origin,pulse,async close(){if(closing)return;closing=true;clearInterval(timer);clearInterval(runner);await Promise.allSettled([...sessions.values()].map(dispose));sessions.clear();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));await runtime.close();await reports.close();}};
 }

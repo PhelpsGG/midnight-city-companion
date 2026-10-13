@@ -4,9 +4,9 @@ import {validateAction,checkAction,findReceipt,actionChoices} from './actions.mj
 const unresolved=j=>['submitting','pending','uncertain'].includes(j.status);
 const required=(ok,message)=>{if(!ok)throw new ConnectionError(message);};
 export class Orchestrator {
- static async open({directory,now=Date.now,timeoutMs=60000}={}){
+ static async open({directory,now=Date.now,timeoutMs=60000,onObservation=async()=>{}}={}){
   const store=directory?await MissionStore.open(directory,s=>{if(s.version!==1||!s.agents||typeof s.agents!=='object')throw Error('Unsupported orchestrator save.');for(const r of Object.values(s.agents)){if(!Array.isArray(r.jobs)||!['running','paused','stopped'].includes(r.mode))throw Error('Invalid orchestrator history.');for(const j of r.jobs){validateAction(j.action);if(!['queued','submitting','pending','uncertain','confirmed','failed','canceled'].includes(j.status))throw Error('Invalid action state.');}}}):null;
-  const r=new Orchestrator(store,now,timeoutMs);
+  const r=new Orchestrator(store,now,timeoutMs);r.onObservation=onObservation;
   for(const a of Object.values(r.state.agents)){a.mode='paused';a.message='Service restarted. Reconnect control, review history and resume explicitly.';for(const j of a.jobs)if(unresolved(j))j.status='uncertain';}
   await r.save();return r;
  }
@@ -37,6 +37,7 @@ export class Orchestrator {
   if(this.fault)return;
   for(const [id,c] of this.connections){
    const r=this.state.agents[id];try{await c.refresh();}catch{continue;}const v=c.view();
+   if(!v.stale)await this.onObservation(c.observation()).catch(()=>{});
    if(!v.controlled||v.stale){r.mode='paused';r.message=v.stale?'Fresh state unavailable. Refresh and resume after recovery.':'Control lost. Reconnect explicitly.';await this.save();continue;}
    const state=c.observation(),pending=r.jobs.find(unresolved);
    if(pending){

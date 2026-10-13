@@ -14,10 +14,10 @@ export class Sandbox {
  finish(id){
   const p=this.state.pending[id];if(!p||p.due>this.now())return false;
   const a=this.state.agents[id],x=p.action;let payload;
-  if(x.kind==='craft'){a.inventory.sandbox_wood-=x.batches;a.inventory.sandbox_plank=(a.inventory.sandbox_plank??0)+x.batches;a.skills.crafting.xp+=10*x.batches;payload={kind:'item_crafted',recipeId:x.recipeId,batches:x.batches,outputs:{sandbox_plank:x.batches}};}
+  if(x.kind==='craft'){a.inventory.sandbox_wood-=x.batches;a.inventory.sandbox_plank=(a.inventory.sandbox_plank??0)+x.batches;a.skills.crafting.xp+=10*x.batches;payload={kind:'item_crafted',recipeId:x.recipeId,batches:x.batches,outputs:{sandbox_plank:x.batches},inputs:{sandbox_wood:x.batches}};}
   if(x.kind==='gather'){a.inventory.sandbox_wood=(a.inventory.sandbox_wood??0)+1;a.skills.woodcutting.xp+=5;payload={kind:'resource_gathered',nodeId:x.nodeId,quantity:1,itemId:'sandbox_wood'};}
   if(x.kind==='move_to'){a.position=x.destination;payload={kind:'agent_arrived',at:x.destination};}
-  if(x.kind==='deliver_contract'){a.inventory.sandbox_plank-=5;a.inventory.crystal+=10;a.completedContractIds.push('sandbox_delivery');payload={kind:'contract_completed',contractId:x.contractId,rewards:{crystal:10}};}
+  if(x.kind==='deliver_contract'){a.inventory.sandbox_plank-=5;a.inventory.crystal+=10;a.completedContractIds.push('sandbox_delivery');payload={kind:'contract_completed',contractId:x.contractId,rewards:{crystal:10},inputs:{sandbox_plank:5}};}
   this.state.events.push({eventId:p.id,payload:{...payload,agentId:id},timestamp:this.now()});this.state.events=this.state.events.slice(-200);
   delete this.state.pending[id];a.status='idle';delete a.activeAction;return true;
  }
