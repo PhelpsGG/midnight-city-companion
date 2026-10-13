@@ -1,0 +1,23 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {once} from 'node:events';
+import {mkdtemp,writeFile,rm} from 'node:fs/promises';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {Orchestrator} from '../server/orchestrator.mjs';
+test('hard kill after dispatch intent plus corrupt primary recovers without reissuing the action',{timeout:15000},async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'companion-kill-'));t.after(()=>rm(dir,{recursive:true,force:true}));
+ const source=`import {Orchestrator} from ${JSON.stringify(new URL('../server/orchestrator.mjs',import.meta.url).href)};
+ const state={agent:{id:'river',skills:{},inventory:{}},capabilities:{recipes:[{recipeId:'plank',failureReason:null,craftableBatches:5}]},events:[]};
+ const c={view:()=>({agent:state.agent,controlled:true,stale:false}),observation:()=>state,async refresh(){},async submit(){process.stdout.write('DISPATCHED');await new Promise(()=>{});}};
+ const timer=setInterval(()=>{},1000),r=await Orchestrator.open({directory:process.argv[1]});await r.attach(c);await r.command(c,{type:'enqueue',requestId:'kill-case',action:{kind:'craft',recipeId:'plank',batches:5}});await r.pulse();clearInterval(timer);`;
+ const child=spawn(process.execPath,['--input-type=module','-e',source,dir],{windowsHide:true,stdio:['ignore','pipe','pipe']});t.after(()=>child.kill());
+ await new Promise((resolve,reject)=>{let out='';child.stdout.on('data',x=>{out+=x;if(out.includes('DISPATCHED'))resolve();});child.once('error',reject);child.once('exit',()=>reject(Error('Child exited before dispatch marker')));});
+ const exited=once(child,'exit');child.kill('SIGKILL');await exited;
+ await writeFile(join(dir,'state.json'),'corrupt primary');
+ const r=await Orchestrator.open({directory:dir});t.after(()=>r.close());let submits=0;
+ const state={agent:{id:'river'},events:[]};const c={view:()=>({agent:state.agent,controlled:true,stale:false}),observation:()=>state,async refresh(){},async submit(){submits++;}};
+ await r.attach(c);await r.pulse();assert.equal(r.view('river').jobs[0].status,'uncertain');assert.equal(submits,0);await assert.rejects(r.command(c,{type:'resume'}),/unresolved/);
+ state.events.push({eventId:'actual-receipt',payload:{agentId:'river',kind:'item_crafted',recipeId:'plank',batches:5}});await r.pulse();assert.equal(r.view('river').jobs[0].status,'confirmed');assert.equal(submits,0);
+});
