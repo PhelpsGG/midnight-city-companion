@@ -20,7 +20,7 @@ Shelve the floating checklist. Save the companion/custom client in a new reposit
 - [x] Import minimal source set and portable npm setup/build/start, renderer preparation and attribution. Verify clean-directory install/build.
 - [x] TDD connection service: authorized discovery, selection/control, wrong key/agent/offline/busy/stale/session expiry/disconnect, no credential leakage or implicit claim.
 - [x] Connect styled live shell and reusable catalog panels to shared observations; native follow; unsupported goal/action states; fake-observer browser checks.
-- [ ] Final focused integration gate, independent review, staged private-data scan, commits, new private repository and draft PR. Attach PR. New local client starts disconnected.
+- [x] Final focused integration gate, independent review, staged private-data scan, commits, new private repository and draft PR. Attach PR. New local client starts disconnected.
 
 ## Review focus
 
@@ -42,3 +42,11 @@ Owner switching/stale tabs cannot display or act as another owner. Credentials n
 - Original sandbox 62759 still shows its existing 8 actuators and prior completed mission; floating checklist is removed. Original unrelated dirty work and saved character retained.
 - Known boundaries: saved catalog guidance can become stale; native 3D/private areas unsupported; no live action execution/engine integration; XP baseline resets on reload; upstream atomic no-takeover guarantees and production control behavior unverified; integration/licensing before public release unresolved. Registry guards one local server process only.
 - Next increment: review this connection-first PR, resolve upstream integration/control contract, then add a separately reviewed live action/runtime adapter without restoring old one-action-per-click engine assumptions.
+
+
+## Delivery
+
+- Private repository verified: https://github.com/PhelpsGG/midnight-city-companion (default main).
+- Draft PR #1: https://github.com/PhelpsGG/midnight-city-companion/pull/1, base main, branch codex/local-agent-setup. Attached to the current chat. No merge/deployment.
+- Main client is running disconnected on 62761; portable sandbox on 62762. Original sandbox 62759 remains available. Temporary synthetic observer 62763 stopped after QA.
+- Screenshots are local ignored evidence: .local/evidence/synthetic-client.png and disconnected-client.png. No credentials, runtime files, upstream renderer sources/art/bundles or saves committed. Original checklist remains recoverable in the original checkout.
