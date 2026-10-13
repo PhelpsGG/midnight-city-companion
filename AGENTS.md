@@ -2,6 +2,8 @@
 
 - Windows PowerShell is available; use portable Node scripts for user-facing setup.
 - General client for arbitrary owners and existing self-hosted agents. No default owner identity, external workspace paths, inherited credentials or invented live state.
+- Core product requirement: users download/run the companion, connect their existing game agent, and control it using their own AI (Codex, Claude, Gemini or another compatible agent). Observation and control-lease acquisition alone do not fulfill this. Do not assume provider API keys or an embedded chatbot are required.
+- GUI and AI commands must share character state, coordinated execution and confirmed results. Verify each connector and its action coverage; protocol support is not completed integration.
 - Keep private credentials, control sessions, saves, runtime logs and downloaded upstream renderer/source/art in ignored local storage. Never print or commit them.
 - Setup and observation must never claim control or perform gameplay. Only an explicit user control action may acquire control. Never take over another active controller.
 - Automated verification uses fake/local observer services and synthetic agents only. Keep the owner's real agent disconnected.

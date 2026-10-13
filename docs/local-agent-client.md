@@ -4,6 +4,16 @@
 
 Shelve the floating checklist. Save the companion/custom client in a new repository under PhelpsGG, using a PR. First make it usable by someone downloading and running it locally with their own existing self-hosted agent. Keep the owner's live agent disconnected throughout development.
 
+## User clarification — October 13, 2026
+
+The required product flow is download/run locally → connect an existing Midnight City agent → control it through the user's own AI, including Codex, Claude and Gemini. The connection-only boundary below records what PR #1 implemented; it does not fulfill the requested playable client. Provider-specific API-key collection is not a stated requirement.
+
+The UI and AI must use the same character state, coordinated execution and confirmed results. The missing work is an AI-accessible action interface and shared runtime, including interruptions and results, rather than a Gemini-only model integration. A local MCP bridge is an implementation recommendation supported by documented tools in Codex, Claude Code and Gemini CLI. These clients have not yet been integrated or verified against the companion. Ordinary web-chat products must not be advertised as compatible merely because a related CLI supports MCP.
+
+Sandbox-only development remains in force. The engine remains a separate source of knowledge/planning; it is not required for basic user-directed play. Closing the GUI should not terminate the local runtime. Continuing AI decisions requires an active AI host or a separately implemented background runner.
+
+Sources for connector feasibility: [Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli), [Claude Code](https://code.claude.com/docs/en/mcp), [Gemini CLI](https://geminicli.com/docs/tools/mcp-server/).
+
 ## Implementation decisions
 
 - New private repository PhelpsGG/midnight-city-companion in C:/Dev/midnight-city-companion; current proof-of-concept and saves remain untouched. Node 24, ESM, existing Pixi renderer integration and ember tab styling.
@@ -32,7 +42,7 @@ Owner switching/stale tabs cannot display or act as another owner. Credentials n
 - Checklist source archived in original checkout .local/shelved-floating-checklist. Sandbox save preserved. No engine-chat coordination.
 
 
-## Verification � October 13, 2026
+## Verification — October 13, 2026
 
 - Independent review identified cookie-renewal, stale-tab identity, expired-lease renewal and competing-browser acquisition issues. Each has a targeted regression and fix. Bounded re-review found no remaining important issue; stale connection wording was also qualified.
 - Final integration gate: 76 tests pass (~1 second test runtime), syntax checked 65 JavaScript modules, both bundles build. Tests cover connection/control lifecycle, actual transport mapping using fake fetch, session invalidation, imported catalog panels and durable sandbox recovery. No production agent calls or gameplay actions were used.
