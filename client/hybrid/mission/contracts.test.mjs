@@ -1,0 +1,45 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {MissionRuntime} from './runtime.mjs';
+import {missionProjection} from './projection.mjs';
+import {skillRecord} from '../../sandbox/schema.mjs';
+const id='arcology_council_evidence_review_canal_runners_ledger';
+test('an earned fixture step unlocks contracts and updates requirements from the same durable snapshot',async t=>{
+ const directory=await mkdtemp(join(tmpdir(),'mcity-contract-unlock-'));let now=1000;
+ const runtime=await MissionRuntime.open({directory,now:()=>now,stepMs:10});
+ t.after(async()=>{await runtime.close();await rm(directory,{recursive:true,force:true});});
+ const seed=runtime.snapshot();seed.character.skills.scavenging=skillRecord(417571);await runtime.persist(seed);
+ const target='charging_cooperative_recovery_claim_antique_neon_vinyl';
+ assert.equal(missionProjection(runtime.snapshot()).contracts.rows.find(r=>r.id===target).status,'locked');
+ await runtime.command({type:'start',revision:runtime.snapshot().revision});await runtime.pulse();now+=11;await runtime.pulse();
+ const p=missionProjection(runtime.snapshot());assert.equal(p.view.agent.skills.scavenging.level,11);
+ assert.equal(p.contracts.rows.find(r=>r.id===target).status,'available');
+ assert.equal(p.contracts.rows.find(r=>r.id==='floodwall_office_recovery_claim_copper_wiring').requirements[0].owned,1);
+ assert.equal(p.view.agent.inventory.copper_wiring,1);assert.equal(runtime.snapshot().receipts.length,1);
+});
+test('contract tracking survives restart without mutating character, receipts or active mission',async t=>{
+ const directory=await mkdtemp(join(tmpdir(),'mcity-contract-'));let runtime=await MissionRuntime.open({directory});
+ t.after(async()=>{await runtime.close();await rm(directory,{recursive:true,force:true});});
+ await runtime.command({type:'start',revision:runtime.snapshot().revision});
+ const before=runtime.snapshot();
+ await runtime.command({type:'track-contract',revision:before.revision,contractId:id,tracked:true});
+ assert.deepEqual(runtime.snapshot().character,before.character);assert.deepEqual(runtime.snapshot().mission,before.mission);assert.deepEqual(runtime.snapshot().receipts,before.receipts);
+ await runtime.close();runtime=await MissionRuntime.open({directory});
+ assert.deepEqual(runtime.snapshot().trackedContractIds,[id]);
+ assert.equal(missionProjection(runtime.snapshot()).contracts.counts.tracked,1);
+ await assert.rejects(runtime.command({type:'track-contract',revision:before.revision,contractId:id,tracked:false}),/Progress changed/);
+ for(const fields of [{contractId:'not-a-contract',tracked:true},{contractId:id,tracked:'yes'},{contractId:id,tracked:true,completed:true}])await assert.rejects(runtime.command({type:'track-contract',revision:runtime.snapshot().revision,...fields}));
+ await runtime.command({type:'track-contract',revision:runtime.snapshot().revision,contractId:id,tracked:false});
+ assert.deepEqual(runtime.snapshot().trackedContractIds,[]);
+});
+test('old mission saves with no tracking field project all imported contracts and empty completion history',async t=>{
+ const directory=await mkdtemp(join(tmpdir(),'mcity-contract-old-'));const runtime=await MissionRuntime.open({directory});
+ t.after(async()=>{await runtime.close();await rm(directory,{recursive:true,force:true});});
+ const state=runtime.snapshot();delete state.trackedContractIds;
+ const p=missionProjection(state).contracts;
+ assert.equal(p.rows.length,200);assert.equal(p.counts.tracked,0);assert.equal(p.counts.completed,0);
+ assert.ok(p.counts.unknown>0);
+});

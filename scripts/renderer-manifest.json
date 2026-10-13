@@ -1,0 +1,105 @@
+{
+  "source": "Midnight City published source maps; cached privately at setup, never redistributed in this repository",
+  "resources": [
+    {
+      "url": "https://midnight.city/assets/AgentInspectorPhone.module-8M4l2BAp.js.map",
+      "sha256": "bf6a8d770d3d96da790763275dcfcef828743b2241127706e93f2970ca223141"
+    },
+    {
+      "url": "https://midnight.city/assets/AgentInventoryWorkbench-a-Zi60DE.js.map",
+      "sha256": "bb9c008687869210fcac115b9900a2f515fd1b58042c7daff3df431641938e47"
+    },
+    {
+      "url": "https://midnight.city/assets/authored-m5IXMVyG.js.map",
+      "sha256": "a905ea40c057a1bb489b34b660e327c1e05a04f7a6e13bc863b8a715373da9dd"
+    },
+    {
+      "url": "https://midnight.city/assets/buildTiledWorld-DaweLXtY.js.map",
+      "sha256": "9b9aa0900cc6d208fb741fd9fe0955d868379c257ea5e577834f632b8532d514"
+    },
+    {
+      "url": "https://midnight.city/assets/CharacterPortrait-B3qQSzkL.js.map",
+      "sha256": "2852604e76f025c8019d7cefb151f9076b4f3f546702fa3e36c3b6e3818722a3"
+    },
+    {
+      "url": "https://midnight.city/assets/composeSpriteSheet-WuDkFtXT.js.map",
+      "sha256": "645303ddc4310db16a4a8f3685fb9af602b80e8d2c7e88552a1b3873fb585f43"
+    },
+    {
+      "url": "https://midnight.city/assets/economyFlowHistory-BnLolXJd.js.map",
+      "sha256": "3e5d87caf67505658c7337aadb5c84bfcd0f0c4948c7982d6681aa33ec7b951c"
+    },
+    {
+      "url": "https://midnight.city/assets/GameCanvas-VS-YogIT.js.map",
+      "sha256": "e9858ade0b0a8112715abbdf4d4c341dae075e0cb7d470eabd7df38affc7096a"
+    },
+    {
+      "url": "https://midnight.city/assets/GameItemIcon-BHviN5XE.js.map",
+      "sha256": "6ac204ce68e5682e3eeca2bee10a77cb1fa0c8b20825a53fb4676114044b046c"
+    },
+    {
+      "url": "https://midnight.city/assets/lib-B1-II0zT.js.map",
+      "sha256": "cad99bc9e11ba885c7e70eace978f7c8c85ca8590895f7ebc5f4b460d757ae9f"
+    },
+    {
+      "url": "https://midnight.city/assets/mapLayout-I-SlpN1O.js.map",
+      "sha256": "eb055ebce1abb13f73f45bd73bdf24866b2a80533194a2f9f188d0b271a1e496"
+    },
+    {
+      "url": "https://midnight.city/assets/npcCharacterSheets-BpIiAAWN.js.map",
+      "sha256": "06d8c7650bac070d8c2ccae9804d60f2ec1fefd90994ec35812612581a8e8265"
+    },
+    {
+      "url": "https://midnight.city/assets/observerWorldContext-WQi-0_7g.js.map",
+      "sha256": "0bc08d9757cbb8798a3764b1307bd82ebf2a71faeb11f304cac392d06a49322e"
+    },
+    {
+      "url": "https://midnight.city/assets/ObserverWorldProvider-CVA8M9-j.js.map",
+      "sha256": "92784117106bf5c039112081bee1df2b0518278ba4543da74a18cf5620f69181"
+    },
+    {
+      "url": "https://midnight.city/assets/pixiApplication-xYkAxoaQ.js.map",
+      "sha256": "11a5d596fa17b32d99919394c755e6b411f058f57101aed34a741dbca55dad73"
+    },
+    {
+      "url": "https://midnight.city/assets/publicAppearanceRevision-BsLWjYOT.js.map",
+      "sha256": "779395af367f912a9ee2ae9340ab032410bfe7f0981d362965490a2771e76994"
+    },
+    {
+      "url": "https://midnight.city/assets/rapBattleViewModel-NpipxkVw.js.map",
+      "sha256": "ce35e10ecbf3e794633acc1d19a6843d1f6da60f399c905bf4a50f255901c53f"
+    },
+    {
+      "url": "https://midnight.city/assets/roomVariant-BxDFu7tz.js.map",
+      "sha256": "a206d71745bd6b47fcbaaeebecc3dd9b3a52315e4be9cc49c92994055174eaf0"
+    },
+    {
+      "url": "https://midnight.city/assets/simulationViewStore-CEyecyt3.js.map",
+      "sha256": "445ca24ad4ed0d0208cfa341b42c83bc5cc3ed3050e9cdc921db5ebe50ca6978"
+    },
+    {
+      "url": "https://midnight.city/assets/index-DHL20p3Z.js.map",
+      "sha256": "e8033da820bbed9ea1dc08bd25b6219c04cfa4bd2724c0cfe415533a54e7172a"
+    },
+    {
+      "url": "https://midnight.city/assets/useAgentMidnightWallet-Ce8Qtw9o.js.map",
+      "sha256": "d9205aa44fd6e458ab5692d348acfc0f7eb70063ddd96f15b7062582214468aa"
+    },
+    {
+      "url": "https://midnight.city/assets/v2CharacterAppearances-NggFAbYr.js.map",
+      "sha256": "2b91e17dc8d50eb41a5efeff57387047de67de405f991f1a61138abeac5334e0"
+    },
+    {
+      "url": "https://midnight.city/assets/V2SheetCharacterPortrait-DCjk-xAT.js.map",
+      "sha256": "fbe405656b5cd74cb515030487bcb0dea876e9a3a5d02475168b19d9a288319a"
+    },
+    {
+      "url": "https://midnight.city/assets/workstationPlacements-lvBedwrS.js.map",
+      "sha256": "96cbc990f65b4b7b798a1c572b4246cb3e90b44d184006752db2ec41356c2626"
+    },
+    {
+      "url": "https://midnight.city/assets/workstations-4MQzs0Dz.js.map",
+      "sha256": "b4eebb74ab0b9b37ec13f4121515a74929017e4d5142cd89103da1ec2ef315ba"
+    }
+  ]
+}

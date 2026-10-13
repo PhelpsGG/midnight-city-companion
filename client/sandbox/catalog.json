@@ -1,0 +1,327 @@
+{
+  "staticVersion": "15572500041115259144",
+  "staticWorld": {
+    "gameContent": {
+      "version": "d3344aed0240519f78c1be48c3f1406425aa36d5430cf7650d924955ed99ad2b",
+      "skillIds": [
+        "scavenging",
+        "engineering"
+      ],
+      "xpThresholds": [
+        0,
+        250,
+        16704,
+        37584,
+        66816,
+        104400,
+        150336,
+        204624,
+        267264,
+        338256,
+        417600,
+        439956,
+        507024,
+        618804,
+        775296,
+        976500,
+        1222416,
+        1513044,
+        1848384,
+        2228436,
+        2653200,
+        2730110,
+        2960842,
+        3345394,
+        3883766,
+        4575960,
+        5421974,
+        6421810,
+        7575466,
+        8882942,
+        10344240,
+        10580256,
+        11288304,
+        12468384,
+        14120496,
+        16244640,
+        18840816,
+        21909024,
+        25449264,
+        29461536,
+        33945840,
+        34442532,
+        35932608,
+        38416068,
+        41892912,
+        46363140,
+        51826752,
+        58283748,
+        65734128,
+        74177892,
+        83615040,
+        84497292,
+        87144048,
+        91555308,
+        97731072,
+        105671340,
+        115376112,
+        126845388,
+        140079168,
+        155077452,
+        171840240,
+        173312208,
+        177728112,
+        185087952,
+        195391728,
+        208639440,
+        224831088,
+        243966672,
+        266046192,
+        291069648,
+        319037040,
+        321406452,
+        328514688,
+        340361748,
+        356947632,
+        378272340,
+        404335872,
+        435138228,
+        470679408,
+        510959412,
+        555978240,
+        558853794,
+        567480456,
+        581858226,
+        601987104,
+        627867090,
+        659498184,
+        696880386,
+        740013696,
+        788898114,
+        843533640,
+        849523632,
+        867493609,
+        897443570,
+        939373515,
+        993283445,
+        1059173359,
+        1137043257,
+        1226893140
+      ],
+      "sources": [
+        {
+          "id": "market_parts_bin",
+          "name": "Market Parts Bin",
+          "outputs": [
+            {
+              "itemId": "copper_wiring",
+              "quantity": 1
+            }
+          ],
+          "rareOutputs": [
+            {
+              "chanceBasisPoints": 250,
+              "outputs": [
+                {
+                  "itemId": "pristine_neon_vinyl",
+                  "quantity": 1
+                }
+              ]
+            },
+            {
+              "chanceBasisPoints": 700,
+              "outputs": [
+                {
+                  "itemId": "contraband_solar_brooch",
+                  "quantity": 1
+                }
+              ]
+            }
+          ],
+          "regenerationTicks": 18,
+          "requiredLevel": 1,
+          "skill": "scavenging",
+          "sourceFamily": "salvage",
+          "toolType": "salvage_kit",
+          "uses": 5,
+          "workTicks": 3,
+          "xp": 29
+        },
+        {
+          "id": "transit_scrap_heap",
+          "name": "Transit Scrap Heap",
+          "outputs": [
+            {
+              "itemId": "scrap_steel",
+              "quantity": 1
+            }
+          ],
+          "rareOutputs": [],
+          "regenerationTicks": 18,
+          "requiredLevel": 1,
+          "skill": "scavenging",
+          "sourceFamily": "salvage",
+          "toolType": "salvage_kit",
+          "uses": 5,
+          "workTicks": 3,
+          "xp": 29
+        }
+      ],
+      "recipes": [
+        {
+          "family": "engineering",
+          "id": "refine_transit_actuator",
+          "inputs": [
+            {
+              "itemId": "scrap_steel",
+              "quantity": 1
+            },
+            {
+              "itemId": "copper_wiring",
+              "quantity": 1
+            }
+          ],
+          "name": "Refine Transit Actuator",
+          "outputs": [
+            {
+              "itemId": "transit_actuator",
+              "quantity": 1
+            }
+          ],
+          "requiredLevel": 1,
+          "skill": "engineering",
+          "workTicks": 5,
+          "workstationType": "construction_yard",
+          "xp": 48
+        }
+      ],
+      "contracts": [
+        {
+          "areaId": "central-plaza",
+          "id": "signal_bureau_infrastructure_order_transit_actuator",
+          "name": "Signal Bureau Infrastructure Order: Transit Actuator",
+          "requiredLevel": 1,
+          "requirements": [
+            {
+              "itemId": "transit_actuator",
+              "quantity": 1
+            }
+          ],
+          "rewards": [
+            {
+              "itemId": "crystal",
+              "quantity": 4
+            }
+          ],
+          "skill": "engineering",
+          "xp": 183
+        }
+      ],
+      "workstationTypes": [
+        {
+          "id": "construction_yard",
+          "name": "Construction Yard",
+          "tier": 1
+        }
+      ],
+      "workstations": [
+        {
+          "areaId": "construction-yard",
+          "id": "central_construction_yard",
+          "name": "Construction Yard Workstation",
+          "supportedRecipeFamilies": [
+            "engineering"
+          ],
+          "workstationType": "construction_yard"
+        }
+      ],
+      "items": [
+        {
+          "category": "tool",
+          "consumable": null,
+          "dormant": false,
+          "equipment": null,
+          "id": "cinder_salvage_kit",
+          "maxQuantity": 1,
+          "name": "Cinder Salvage Kit",
+          "tool": {
+            "outputBonusBasisPoints": 500,
+            "requiredLevel": 21,
+            "skill": "scavenging",
+            "sourceFamily": "salvage",
+            "toolType": "salvage_kit",
+            "wearChanceBasisPoints": 46,
+            "workBonusPercent": 10
+          }
+        },
+        {
+          "category": "trade_good",
+          "consumable": null,
+          "dormant": false,
+          "equipment": null,
+          "id": "contraband_solar_brooch",
+          "maxQuantity": null,
+          "name": "Contraband Solar Brooch",
+          "tool": null
+        },
+        {
+          "category": "raw_resource",
+          "consumable": null,
+          "dormant": false,
+          "equipment": null,
+          "id": "copper_wiring",
+          "maxQuantity": null,
+          "name": "Copper Wiring",
+          "tool": null
+        },
+        {
+          "category": "currency",
+          "consumable": null,
+          "dormant": false,
+          "equipment": null,
+          "id": "crystal",
+          "maxQuantity": null,
+          "name": "Crystal",
+          "tool": null
+        },
+        {
+          "category": "trade_good",
+          "consumable": null,
+          "dormant": false,
+          "equipment": null,
+          "id": "pristine_neon_vinyl",
+          "maxQuantity": null,
+          "name": "Pristine Neon Vinyl",
+          "tool": null
+        },
+        {
+          "category": "raw_resource",
+          "consumable": null,
+          "dormant": false,
+          "equipment": null,
+          "id": "scrap_steel",
+          "maxQuantity": null,
+          "name": "Scrap Steel",
+          "tool": null
+        },
+        {
+          "category": "processed_material",
+          "consumable": null,
+          "dormant": false,
+          "equipment": null,
+          "id": "transit_actuator",
+          "maxQuantity": null,
+          "name": "Transit Actuator",
+          "tool": null
+        }
+      ]
+    }
+  },
+  "sandboxProvenance": {
+    "format": "sandbox-catalog-v1",
+    "source": "Public Midnight City static-world snapshot, local research cache 2026-10-10",
+    "sourceSha256": "6282c3ad3f1082bdf9c658e0c3c182e6e869d124e9ba5460ed3babfd24f9ba07",
+    "subset": true,
+    "notes": "Unmodified selected production records and XP table. Synthetic spatial placements are separate. Catalog facts are observations, not an authoritative server specification."
+  }
+}

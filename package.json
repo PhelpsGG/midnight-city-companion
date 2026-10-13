@@ -1,0 +1,24 @@
+{
+  "name": "midnight-city-companion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "setup": "node scripts/prepare-renderer.mjs && npm run build",
+    "build": "node scripts/build.mjs",
+    "start": "node server/start.mjs",
+    "sandbox": "node client/hybrid/mission/start.mjs",
+    "test:browser": "node tests/browser-server.mjs",
+    "test": "node --test tests/*.test.mjs client/tests/*.test.mjs client/hybrid/*.test.mjs client/hybrid/contracts/*.test.mjs client/hybrid/discovery/*.test.mjs client/hybrid/mission/*.test.mjs",
+    "lint": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "esbuild": "0.28.0",
+    "pixi.js": "8.18.1",
+    "three": "0.183.0",
+    "react": "19.0.1"
+  }
+}
