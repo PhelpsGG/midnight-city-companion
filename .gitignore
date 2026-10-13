@@ -1,0 +1,9 @@
+node_modules/
+.local/
+dist/
+.env*
+!.env.example
+*.log
+**/account.json
+**/*session*.json
+**/*lease*.json
